@@ -26,7 +26,7 @@ python main.py --difficulty hard
 
 ## Project layout
 
-The game logic lives in game.py on its own, completely separate from anything that reads keyboard input or prints to the screen. That part just answers questions like "is this guess correct" or "what number should the game pick this round." All of the actual back and forth with the player happens in main.py instead. Keeping those two apart means the logic can be tested on its own without ever needing to simulate someone typing at a keyboard.
+The game logic lives in game.py on its own, completely separate from anything that reads keyboard input or prints to the screen. That part just answers questions like "is this guess correct" or "what number should the game pick this round." All of the actual back and forth with the player happens in main.py instead. Keeping those two apart means the logic can be tested on its own without ever needing to simulate someone typing at their keyboard. 
 
 ```
 number-guessing-game
