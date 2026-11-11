@@ -78,7 +78,11 @@ def main() -> None:
 
     try:
         play(args.difficulty)
-    except KeyboardInterrupt:
+    except (KeyboardInterrupt, EOFError):
+        # Ctrl+C interrupts the prompt, and Ctrl+D (or a closed/piped
+        # stdin) raises EOFError from the same input() call. Both mean
+        # "the player left mid-game", so both exit the same clean way
+        # instead of dumping a traceback.
         print("\n\nGame interrupted. See you next time.")
         sys.exit(0)
 
