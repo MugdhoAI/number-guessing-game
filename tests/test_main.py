@@ -8,8 +8,10 @@ Run with:
 """
 
 import io
+import tempfile
 import unittest
 from contextlib import redirect_stdout
+from pathlib import Path
 from unittest import mock
 
 from main import ask_play_again, main
@@ -36,6 +38,17 @@ class TestAskPlayAgain(unittest.TestCase):
 
 
 class TestPlayAgainLoop(unittest.TestCase):
+
+    def setUp(self):
+        # Keep played games out of the real best_scores.json.
+        self.tmpdir = tempfile.TemporaryDirectory()
+        self.scores_file = Path(self.tmpdir.name) / "best_scores.json"
+        self._patcher = mock.patch("main.SCORES_FILE", self.scores_file)
+        self._patcher.start()
+
+    def tearDown(self):
+        self._patcher.stop()
+        self.tmpdir.cleanup()
 
     def test_winning_then_declining_plays_once(self):
         # Target fixed at 42, so the first guess wins and "n" ends it.

@@ -16,7 +16,7 @@ import json
 import sys
 from pathlib import Path
 
-from game import generate_target, check_guess, max_attempts_for, DIFFICULTY_RANGES
+from game import generate_target, check_guess, closeness, max_attempts_for, DIFFICULTY_RANGES
 
 
 SCORES_FILE = Path(__file__).with_name("best_scores.json")
@@ -93,8 +93,10 @@ def get_valid_guess(low: int, high: int) -> int:
         return value
 
 
-def play(difficulty: str, scores_file=SCORES_FILE) -> None:
+def play(difficulty: str, scores_file=None) -> None:
     """Run one full game at the given difficulty."""
+    if scores_file is None:
+        scores_file = SCORES_FILE
     low, high = DIFFICULTY_RANGES[difficulty]
     target = generate_target(difficulty)
     attempts_allowed = max_attempts_for(difficulty)
@@ -122,7 +124,7 @@ def play(difficulty: str, scores_file=SCORES_FILE) -> None:
 
         remaining = attempts_allowed - attempt_number
         direction = "higher" if result.hint == "higher" else "lower"
-        print(f"Go {direction}. ", end="")
+        print(f"Go {direction}, {closeness(guess, target)}. ", end="")
         if remaining > 0:
             print(f"{remaining} attempt(s) left.\n")
         else:

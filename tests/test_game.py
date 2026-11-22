@@ -7,7 +7,25 @@ Run with:
 
 import unittest
 
-from game import generate_target, check_guess, max_attempts_for, DIFFICULTY_RANGES
+from game import generate_target, check_guess, closeness, max_attempts_for, DIFFICULTY_RANGES
+
+
+class TestCloseness(unittest.TestCase):
+
+    def test_exact_guess_is_very_close(self):
+        self.assertEqual(closeness(50, 50), "very close")
+
+    def test_five_away_is_very_close(self):
+        self.assertEqual(closeness(45, 50), "very close")
+        self.assertEqual(closeness(55, 50), "very close")
+
+    def test_fifteen_away_is_close(self):
+        self.assertEqual(closeness(35, 50), "close")
+        self.assertEqual(closeness(65, 50), "close")
+
+    def test_sixteen_away_is_far(self):
+        self.assertEqual(closeness(34, 50), "far")
+        self.assertEqual(closeness(66, 50), "far")
 
 
 class TestGenerateTarget(unittest.TestCase):

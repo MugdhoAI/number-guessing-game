@@ -71,6 +71,21 @@ def check_guess(guess: int, target: int) -> GuessResult:
     return GuessResult(is_correct=False, hint="lower")
 
 
+def closeness(guess: int, target: int) -> str:
+    """
+    Describe how close a wrong guess is to the target.
+
+    Returns "very close" when the guess is within 5 of the target,
+    "close" when it is within 15, and "far" otherwise.
+    """
+    distance = abs(guess - target)
+    if distance <= 5:
+        return "very close"
+    if distance <= 15:
+        return "close"
+    return "far"
+
+
 def max_attempts_for(difficulty: str) -> int:
     """Return the number of guesses allowed for a given difficulty."""
     if difficulty not in MAX_ATTEMPTS_BY_DIFFICULTY:
