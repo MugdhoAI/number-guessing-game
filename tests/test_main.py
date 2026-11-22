@@ -15,7 +15,7 @@ from contextlib import redirect_stdout
 from pathlib import Path
 from unittest import mock
 
-from main import ask_play_again, get_valid_guess, main
+from main import ask_play_again, get_valid_guess, load_best_scores, main, play, record_best_score
 
 
 class TestAskPlayAgain(unittest.TestCase):
@@ -69,6 +69,47 @@ class TestPlayAgainLoop(unittest.TestCase):
                 redirect_stdout(io.StringIO()) as out:
             main()
         self.assertEqual(out.getvalue().count("Correct!"), 2)
+
+
+class TestPlay(unittest.TestCase):
+
+    def setUp(self):
+        # Keep played games out of the real best_scores.json.
+        self.tmpdir = tempfile.TemporaryDirectory()
+        self.scores_file = Path(self.tmpdir.name) / "best_scores.json"
+        self._patcher = mock.patch("main.SCORES_FILE", self.scores_file)
+        self._patcher.start()
+
+    def tearDown(self):
+        self._patcher.stop()
+        self.tmpdir.cleanup()
+
+    def run_play(self, target, answers, difficulty="medium"):
+        with mock.patch("main.generate_target", return_value=target), \
+                mock.patch("builtins.input", side_effect=answers), \
+                redirect_stdout(io.StringIO()) as out:
+            play(difficulty)
+        return out.getvalue()
+
+    def test_winning_game_reports_attempts_and_records_best(self):
+        output = self.run_play(42, ["10", "90", "42"])
+        self.assertIn("Go higher, far.", output)
+        self.assertIn("Go lower, far.", output)
+        self.assertIn("Correct! The number was 42. You got it in 3 attempt(s).", output)
+        self.assertIn("New best score for medium: 3 attempt(s).", output)
+        self.assertEqual(load_best_scores(self.scores_file), {"medium": 3})
+
+    def test_losing_game_reveals_the_target(self):
+        guesses = ["1", "2", "3", "4", "5", "6", "7", "8"]
+        output = self.run_play(42, guesses)
+        self.assertIn("Out of attempts. The number was 42.", output)
+        self.assertEqual(load_best_scores(self.scores_file), {})
+
+    def test_winning_game_shows_existing_best_first(self):
+        record_best_score("medium", 2, self.scores_file)
+        output = self.run_play(42, ["42"])
+        self.assertIn("Best score for medium: 2 attempt(s). Try to beat it!", output)
+        self.assertIn("New best score for medium: 1 attempt(s).", output)
 
 
 class TestGetValidGuess(unittest.TestCase):
