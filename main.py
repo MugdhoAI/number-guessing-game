@@ -9,10 +9,12 @@ of attempts or guess correctly.
 Usage:
     python main.py
     python main.py --difficulty hard
+    python main.py --seed 7
 """
 
 import argparse
 import json
+import random
 import sys
 from pathlib import Path
 
@@ -152,7 +154,14 @@ def main() -> None:
         "--difficulty", default="medium", choices=list(DIFFICULTY_RANGES.keys()),
         help="Game difficulty, which changes the number range and attempts allowed. Default: medium."
     )
+    parser.add_argument(
+        "--seed", type=int, default=None,
+        help="Seed the random number generator, so the same seed always picks the same target. Useful for testing and replaying a game."
+    )
     args = parser.parse_args()
+
+    if args.seed is not None:
+        random.seed(args.seed)
 
     try:
         while True:

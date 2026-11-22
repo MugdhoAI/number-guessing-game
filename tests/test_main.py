@@ -8,6 +8,7 @@ Run with:
 """
 
 import io
+import random
 import tempfile
 import unittest
 from contextlib import redirect_stdout
@@ -68,6 +69,21 @@ class TestPlayAgainLoop(unittest.TestCase):
                 redirect_stdout(io.StringIO()) as out:
             main()
         self.assertEqual(out.getvalue().count("Correct!"), 2)
+
+
+class TestSeededGame(unittest.TestCase):
+
+    def test_same_seed_gives_same_target(self):
+        # The seeded target is known up front, so feed eight wrong
+        # guesses and check the revealed number matches it.
+        expected = random.Random(7).randint(1, 100)
+        guesses = [n for n in range(1, 101) if n != expected][:8]
+        inputs = [str(g) for g in guesses] + ["n"]
+        with mock.patch("sys.argv", ["main.py", "--seed", "7"]), \
+                mock.patch("builtins.input", side_effect=inputs), \
+                redirect_stdout(io.StringIO()) as out:
+            main()
+        self.assertIn(f"The number was {expected}", out.getvalue())
 
 
 class TestCleanExit(unittest.TestCase):
