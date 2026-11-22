@@ -131,6 +131,17 @@ def play(difficulty: str, scores_file=SCORES_FILE) -> None:
     print(f"\nOut of attempts. The number was {target}. Better luck next time!")
 
 
+def ask_play_again() -> bool:
+    """Ask the player whether to start another round."""
+    while True:
+        answer = input("Play again? (y/n): ").strip().lower()
+        if answer in ("y", "yes"):
+            return True
+        if answer in ("n", "no"):
+            return False
+        print("Please answer y or n.")
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(
         description="Play a number guessing game against the computer."
@@ -142,7 +153,10 @@ def main() -> None:
     args = parser.parse_args()
 
     try:
-        play(args.difficulty)
+        while True:
+            play(args.difficulty)
+            if not ask_play_again():
+                break
     except (KeyboardInterrupt, EOFError):
         # Ctrl+C interrupts the prompt, and Ctrl+D (or a closed/piped
         # stdin) raises EOFError from the same input() call. Both mean

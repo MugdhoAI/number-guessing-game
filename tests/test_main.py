@@ -12,7 +12,49 @@ import unittest
 from contextlib import redirect_stdout
 from unittest import mock
 
-from main import main
+from main import ask_play_again, main
+
+
+class TestAskPlayAgain(unittest.TestCase):
+
+    def run_ask_play_again(self, answers):
+        with mock.patch("builtins.input", side_effect=answers), \
+                redirect_stdout(io.StringIO()):
+            return ask_play_again()
+
+    def test_yes_starts_another_round(self):
+        self.assertTrue(self.run_ask_play_again(["y"]))
+
+    def test_full_word_yes_is_accepted(self):
+        self.assertTrue(self.run_ask_play_again(["YES"]))
+
+    def test_no_ends_the_game(self):
+        self.assertFalse(self.run_ask_play_again(["n"]))
+
+    def test_invalid_answer_is_asked_again(self):
+        self.assertTrue(self.run_ask_play_again(["maybe", "y"]))
+
+
+class TestPlayAgainLoop(unittest.TestCase):
+
+    def test_winning_then_declining_plays_once(self):
+        # Target fixed at 42, so the first guess wins and "n" ends it.
+        with mock.patch("sys.argv", ["main.py", "--difficulty", "easy"]), \
+                mock.patch("main.generate_target", return_value=42), \
+                mock.patch("builtins.input", side_effect=["42", "n"]), \
+                redirect_stdout(io.StringIO()) as out:
+            main()
+        self.assertIn("Correct!", out.getvalue())
+        self.assertIn("You got it in 1 attempt(s)", out.getvalue())
+
+    def test_winning_then_accepting_plays_twice(self):
+        # Two winning rounds: guess 42, say yes, guess 42 again, say no.
+        with mock.patch("sys.argv", ["main.py", "--difficulty", "easy"]), \
+                mock.patch("main.generate_target", return_value=42), \
+                mock.patch("builtins.input", side_effect=["42", "y", "42", "n"]), \
+                redirect_stdout(io.StringIO()) as out:
+            main()
+        self.assertEqual(out.getvalue().count("Correct!"), 2)
 
 
 class TestCleanExit(unittest.TestCase):
