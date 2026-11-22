@@ -62,7 +62,13 @@ def record_best_score(difficulty: str, attempts: int, scores_file=SCORES_FILE):
 
     Returns a tuple of the best score for that difficulty after the
     update and a flag that is True when this game set a new best.
+
+    Raises:
+        ValueError: If attempts is not a positive number of guesses.
     """
+    if not isinstance(attempts, int) or isinstance(attempts, bool) or attempts <= 0:
+        raise ValueError(f"Attempts must be a positive number of guesses, got {attempts!r}.")
+
     scores = load_best_scores(scores_file)
     previous_best = scores.get(difficulty)
 

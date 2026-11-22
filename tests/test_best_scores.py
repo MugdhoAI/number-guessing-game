@@ -68,6 +68,16 @@ class TestBestScores(unittest.TestCase):
         record_best_score("hard", 9, self.scores_file)
         self.assertEqual(load_best_scores(self.scores_file), {"easy": 2, "hard": 9})
 
+    def test_zero_attempts_are_rejected(self):
+        with self.assertRaises(ValueError):
+            record_best_score("easy", 0, self.scores_file)
+        self.assertFalse(self.scores_file.exists())
+
+    def test_negative_attempts_are_rejected(self):
+        with self.assertRaises(ValueError):
+            record_best_score("easy", -3, self.scores_file)
+        self.assertFalse(self.scores_file.exists())
+
 
 if __name__ == "__main__":
     unittest.main()
