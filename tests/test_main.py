@@ -15,7 +15,7 @@ from contextlib import redirect_stdout
 from pathlib import Path
 from unittest import mock
 
-from main import ask_play_again, main
+from main import ask_play_again, get_valid_guess, main
 
 
 class TestAskPlayAgain(unittest.TestCase):
@@ -69,6 +69,33 @@ class TestPlayAgainLoop(unittest.TestCase):
                 redirect_stdout(io.StringIO()) as out:
             main()
         self.assertEqual(out.getvalue().count("Correct!"), 2)
+
+
+class TestGetValidGuess(unittest.TestCase):
+
+    def run_get_valid_guess(self, answers, low=1, high=100):
+        with mock.patch("builtins.input", side_effect=answers), \
+                redirect_stdout(io.StringIO()) as out:
+            value = get_valid_guess(low, high)
+        return value, out.getvalue()
+
+    def test_non_numeric_input_is_asked_again(self):
+        value, output = self.run_get_valid_guess(["abc", "42"])
+        self.assertEqual(value, 42)
+        self.assertIn("not a whole number", output)
+
+    def test_out_of_range_input_is_asked_again(self):
+        value, output = self.run_get_valid_guess(["0", "101", "42"])
+        self.assertEqual(value, 42)
+        self.assertEqual(output.count("Out of range"), 2)
+
+    def test_blank_input_is_asked_again(self):
+        value, _ = self.run_get_valid_guess(["   ", "7"])
+        self.assertEqual(value, 7)
+
+    def test_boundary_values_are_accepted(self):
+        self.assertEqual(self.run_get_valid_guess(["1"])[0], 1)
+        self.assertEqual(self.run_get_valid_guess(["100"])[0], 100)
 
 
 class TestSeededGame(unittest.TestCase):
